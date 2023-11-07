@@ -118,7 +118,23 @@ const getCountryData = async (country) => {
     // })
 }
 
-// btn.addEventListener('click', () => {
-    getCountryData('Canada');
-// })
+// const getCountriesData = async (c1, c2, c3) => {
+//     const data = await Promise.all([
+//         getJson(`https://restcountries.com/v2/name/${c1}`),
+//         getJson(`https://restcountries.com/v2/name/${c2}`),
+//         getJson(`https://restcountries.com/v2/name/${c3}`)
+//     ])
+//     return data;
+// }
+
+btn.addEventListener('click', async () => {
+    countriesContainer.innerHTML = '';
+    try {
+        const data = await getJson(`https://restcountries.com/v2/all`);
+        const random = Math.trunc(Math.random() * data.length);
+        getCountryData(data[random].name);
+    } catch(error) {
+        renderError(error.message)
+    }
+})
 
