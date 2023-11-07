@@ -3,6 +3,11 @@ import './style.css';
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
+const renderError = (msg) => {
+    countriesContainer.insertAdjacentText('beforeend', msg);
+    countriesContainer.style.opacity = 1;
+}
+
 const renderCountry = (country, className="") => {
     const countryCard = `
         <article class="country ${className}">
@@ -20,7 +25,34 @@ const renderCountry = (country, className="") => {
     countriesContainer.style.opacity = 1;
 }
 
+const getJson = (url, errorMsg = 'Erreur lors de l\'appel de l\'API') => {
+    return fetch(url).then(response => {
+        if(!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+        return response.json();
+    })
+}
+
 const getCountryData = (country) => {
+    getJson(`https://restcountries.com/v2/name/${country}`, "Pays non trouvé")
+        .then(([ country ]) => {
+            renderCountry(country);
+
+            if(!country.borders) throw new Error('Pas de pays voisin direct');
+            const [paysVoisin] = country.borders;
+            return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
+        })
+        .then(country => {
+            renderCountry(country, 'neighbour')
+
+            if(!country.borders) throw new Error('Pas de deuxième pays voisin');
+            const [paysVoisin] = country.borders;
+            return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
+        })
+        .then(country => {
+            renderCountry(country, 'neighbour')
+        })
+        .catch(error => renderError(error.message))
+
     // Callback hell
     // const request = new XMLHttpRequest();
     // request.open('GET', `https://restcountries.com/v2/name/${country}`);
@@ -57,6 +89,6 @@ const getCountryData = (country) => {
 }
 
 // btn.addEventListener('click', () => {
-    getCountryData('austria');
+    getCountryData('Canada');
 // })
 
