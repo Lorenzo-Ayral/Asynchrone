@@ -25,33 +25,63 @@ const renderCountry = (country, className="") => {
     countriesContainer.style.opacity = 1;
 }
 
-const getJson = (url, errorMsg = 'Erreur lors de l\'appel de l\'API') => {
-    return fetch(url).then(response => {
-        if(!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+const getJson = async (url, errorMsg = 'Erreur lors de l\'appel de l\'API') => {
+    try {
+        const response = await fetch(url);
         return response.json();
-    })
+    } catch(error) {
+        throw new Error(error);
+    }
+
+    //.then hell
+    // return fetch(url).then(response => {
+    //     if(!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+    //     return response.json();
+    // })
 }
 
-const getCountryData = (country) => {
-    getJson(`https://restcountries.com/v2/name/${country}`, "Pays non trouvé")
-        .then(([ country ]) => {
-            renderCountry(country);
+const checkNeighbour = (data) => {
+    if(!data.borders) throw new Error('Pas de pays voisin direct');
+}
 
-            if(!country.borders) throw new Error('Pas de pays voisin direct');
-            const [paysVoisin] = country.borders;
-            return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
-        })
-        .then(country => {
-            renderCountry(country, 'neighbour')
+const getCountryData = async (country) => {
+    try {
+        const [data] = await getJson(`https://restcountries.com/v2/name/${country}`)
+        renderCountry(data);
+        checkNeighbour(data)
+        const [paysVoisin] = data.borders;
 
-            if(!country.borders) throw new Error('Pas de deuxième pays voisin');
-            const [paysVoisin] = country.borders;
-            return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
-        })
-        .then(country => {
-            renderCountry(country, 'neighbour')
-        })
-        .catch(error => renderError(error.message))
+        const data2 = await getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
+        checkNeighbour(data2)
+        renderCountry(data2, 'neighbour');
+        const [paysVoisin2] = data2.borders;
+
+        const data3 = await getJson(`https://restcountries.com/v2/alpha/${paysVoisin2}`, "Pays voisin non trouvé")
+        checkNeighbour(data3)
+        renderCountry(data3, 'neighbour')
+    } catch(error) {
+        renderError(error.message)
+    }
+    //.then hell
+    // getJson(`https://restcountries.com/v2/name/${country}`, "Pays non trouvé")
+    //     .then(([ country ]) => {
+    //         renderCountry(country);
+    //
+    //         if(!country.borders) throw new Error('Pas de pays voisin direct');
+    //         const [paysVoisin] = country.borders;
+    //         return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
+    //     })
+    //     .then(country => {
+    //         renderCountry(country, 'neighbour')
+    //
+    //         if(!country.borders) throw new Error('Pas de deuxième pays voisin');
+    //         const [paysVoisin] = country.borders;
+    //         return getJson(`https://restcountries.com/v2/alpha/${paysVoisin}`, "Pays voisin non trouvé")
+    //     })
+    //     .then(country => {
+    //         renderCountry(country, 'neighbour')
+    //     })
+    //     .catch(error => renderError(error.message))
 
     // Callback hell
     // const request = new XMLHttpRequest();
