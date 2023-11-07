@@ -8,7 +8,7 @@ request.open('GET', 'https://restcountries.com/v2/name/france');
 request.send();
 
 request.addEventListener('load', function() {
-    const country = JSON.parse(this.responseText);
+    const [country] = JSON.parse(this.responseText);
     const countryCard = `
         <article class="country">
             <img class="country__img" src="${country.flag}" />
@@ -21,4 +21,6 @@ request.addEventListener('load', function() {
             </div>
         </article>
     `;
+    countriesContainer.insertAdjacentHTML('beforeend', countryCard);
+    countriesContainer.style.opacity = 1;
 })
