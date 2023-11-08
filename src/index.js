@@ -132,7 +132,7 @@ btn.addEventListener('click', async () => {
     try {
         const data = await getJson(`https://restcountries.com/v2/all`);
         const random = Math.trunc(Math.random() * data.length);
-        getCountryData(data[random].name);
+        await getCountryData(data[random].name);
     } catch(error) {
         renderError(error.message)
     }
